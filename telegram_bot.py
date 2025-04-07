@@ -6,8 +6,16 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 # Load environment variables from .env file
 load_dotenv()
 
-
 TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+# States for the bot
+STATE_IDLE = 0
+STATE_AWAITING_IMAGE = 1
+STATE_AWAITING_NAME = 2
+STATE_RECOGNIZE_IMAGE = 3
+
+user_states = {}         # maps user_id to state
+temp_faces = {}          # temporary image storage per user (for naming)
 
 # Define the fixed custom keyboard buttons
 keyboard_buttons = [['Hello', 'World'], ['Telegram', 'Bot']]

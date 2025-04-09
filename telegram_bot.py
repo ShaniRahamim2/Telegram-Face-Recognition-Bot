@@ -39,6 +39,32 @@ def get_known_faces():
 
     return encodings, names
 
+# Loads all celebrity face encodings, names, and image paths from the celebs folder
+def load_celeb_encodings(celeb_dir="celebs"):
+    encodings = [] 
+    names = []    
+    paths = []     
+
+    # Loop through each celeb directory inside the main folder
+    for celeb_name in os.listdir(celeb_dir):
+        celeb_path = os.path.join(celeb_dir, celeb_name)
+
+        # Ensure it's a directory (not a file)
+        if os.path.isdir(celeb_path):
+            for file in os.listdir(celeb_path):
+                if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    full_path = os.path.join(celeb_path, file)
+
+                    # Load image and extract face encodings
+                    image = face_recognition.load_image_file(full_path)
+                    face_enc = face_recognition.face_encodings(image)
+
+                    if face_enc:
+                        encodings.append(face_enc[0])
+                        names.append(celeb_name)
+                        paths.append(full_path)
+
+    return encodings, names, paths
 
 # Start command handler – sends the keyboard to the user
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):

@@ -15,12 +15,13 @@ STATE_IDLE = 0
 STATE_AWAITING_IMAGE = 1
 STATE_AWAITING_NAME = 2
 STATE_RECOGNIZE_IMAGE = 3
+STATE_SIMILAR_CELEB = 4
 
 user_states = {}         # maps user_id to state
 temp_faces = {}          # temporary image storage per user (for naming)
 
 # Define custom keyboard buttons
-keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces']]
+keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces'], ['Similar celebs']]
 keyboard = ReplyKeyboardMarkup(keyboard_buttons, resize_keyboard=True)
 
 # Load face encodings and names from known_faces folder

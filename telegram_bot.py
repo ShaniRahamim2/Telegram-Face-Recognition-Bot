@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+import face_recognition
+import cv2
 
 # Load environment variables from .env file
 load_dotenv()
@@ -62,6 +64,64 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             # If something went wrong (e.g. image not found)
             await update.message.reply_text("Something went wrong. Please try again.")
+
+# processes user-uploaded photos for adding or recognizing faces 
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    state = user_states.get(user_id, STATE_IDLE)
+
+    # Get the highest resolution photo sent by the user
+    photo = await update.message.photo[-1].get_file()
+    temp_path = f"temp_{user_id}.jpg"
+    await photo.download_to_drive(temp_path)
+
+    # Load the image and extract face encodings
+    image = face_recognition.load_image_file(temp_path)
+    encodings = face_recognition.face_encodings(image)
+
+    # Handle 'Add face' mode
+    if state == STATE_AWAITING_IMAGE:
+        if len(encodings) != 1:
+            await update.message.reply_text("Please upload an image with exactly ONE face.")
+            os.remove(temp_path)
+        else:
+            temp_faces[user_id] = temp_path
+            user_states[user_id] = STATE_AWAITING_NAME
+            await update.message.reply_text("Great! What's the name of this person?")
+
+    # Handle 'Recognize faces' mode
+    elif state == STATE_RECOGNIZE_IMAGE:
+        known_encodings, known_names = get_known_faces()
+        face_locations = face_recognition.face_locations(image)
+        found_names = []
+
+        image_cv = cv2.imread(temp_path)
+
+        for location, face_enc in zip(face_locations, encodings):
+            matches = face_recognition.compare_faces(known_encodings, face_enc)
+            name = "Unknown"
+            if True in matches:
+                name = known_names[matches.index(True)]
+
+            found_names.append(name)
+
+            # Draw box and name
+            top, right, bottom, left = location
+            cv2.rectangle(image_cv, (left, top), (right, bottom), (255, 0, 0), 2)
+            cv2.putText(image_cv, name, (left, top - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+
+        result_path = f"recognized_{user_id}.jpg"
+        cv2.imwrite(result_path, image_cv)
+
+        caption = "Faces found: " + ", ".join(found_names) if found_names else "I don’t recognize anyone."
+        await update.message.reply_photo(photo=open(result_path, 'rb'), caption=caption, reply_markup=keyboard)
+
+        # Cleanup and reset state
+        os.remove(temp_path)
+        os.remove(result_path)
+        user_states[user_id] = STATE_IDLE
+
 
 # Main function – sets up and runs the bot
 def main():

@@ -170,6 +170,42 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         os.remove(result_path)
         user_states[user_id] = STATE_IDLE
 
+        # Handle 'Similar celebs' mode
+    elif state == STATE_SIMILAR_CELEB:
+        # Make sure exactly one face is detected
+        if len(encodings) != 1:
+            await update.message.reply_text("Please upload an image with exactly ONE face.")
+            os.remove(temp_path)
+            return
+
+        # Get the encoding of the uploaded face
+        user_encoding = encodings[0]
+
+        # Load all known celeb encodings from the celebs folder
+        celeb_encodings, celeb_names, celeb_image_paths = load_celeb_encodings()
+
+        if not celeb_encodings:
+            await update.message.reply_text("No celebrity data found.")
+            os.remove(temp_path)
+            return
+
+        # Compare user's face to all celebrity faces
+        distances = face_recognition.face_distance(celeb_encodings, user_encoding)
+        best_match_index = distances.argmin()
+        best_name = celeb_names[best_match_index]
+        best_image_path = celeb_image_paths[best_match_index]
+
+        # Send back the most similar celebrity photo
+        await update.message.reply_photo(
+            photo=open(best_image_path, 'rb'),
+            caption=f"The celeb that the person is most similar to is {best_name}.",
+            reply_markup=keyboard
+        )
+
+        # Clean up and reset state
+        os.remove(temp_path)
+        user_states[user_id] = STATE_IDLE
+
 
 # Main function – sets up and runs the bot
 def main():

@@ -91,7 +91,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "Reset faces":
         for f in os.listdir("known_faces"):
             os.remove(os.path.join("known_faces", f))
-        await update.message.reply_text("All faces have been deleted.", reply_markup=keyboard)ֿ
+        await update.message.reply_text("All faces have been deleted.", reply_markup=keyboard)
 
     # Handles the 'Similar celebs' button – sets state and prompts user to upload a face image
     elif text == "Similar celebs":

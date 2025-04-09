@@ -23,7 +23,9 @@ keyboard = ReplyKeyboardMarkup(keyboard_buttons, resize_keyboard=True)
 
 # Start command handler – sends the keyboard to the user
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Choose one of the buttons below:", reply_markup=keyboard)
+    user_id = update.effective_user.id
+    user_states[user_id] = STATE_IDLE
+    await update.message.reply_text("Choose an action:", reply_markup=keyboard)
 
 # Message handler – replies with the exact same text the user sends
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):

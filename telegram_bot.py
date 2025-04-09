@@ -17,8 +17,8 @@ STATE_RECOGNIZE_IMAGE = 3
 user_states = {}         # maps user_id to state
 temp_faces = {}          # temporary image storage per user (for naming)
 
-# Define the fixed custom keyboard buttons
-keyboard_buttons = [['Hello', 'World'], ['Telegram', 'Bot']]
+# Define custom keyboard buttons
+keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces']]
 keyboard = ReplyKeyboardMarkup(keyboard_buttons, resize_keyboard=True)
 
 # Start command handler – sends the keyboard to the user

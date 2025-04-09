@@ -21,7 +21,7 @@ user_states = {}         # maps user_id to state
 temp_faces = {}          # temporary image storage per user (for naming)
 
 # Define custom keyboard buttons
-keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces'], ['Similar celebs']]
+keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces'], ['Similar celebs'], ['Map']]
 keyboard = ReplyKeyboardMarkup(keyboard_buttons, resize_keyboard=True)
 
 # Load face encodings and names from known_faces folder

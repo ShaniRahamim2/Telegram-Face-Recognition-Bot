@@ -23,6 +23,22 @@ temp_faces = {}          # temporary image storage per user (for naming)
 keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces']]
 keyboard = ReplyKeyboardMarkup(keyboard_buttons, resize_keyboard=True)
 
+# Load face encodings and names from known_faces folder
+def get_known_faces():
+    encodings = []
+    names = []
+
+    for file in os.listdir("known_faces"):
+        image = face_recognition.load_image_file(f"known_faces/{file}")
+        enc = face_recognition.face_encodings(image)
+
+        if enc:
+            encodings.append(enc[0])
+            names.append(file.split(".")[0])
+
+    return encodings, names
+
+
 # Start command handler – sends the keyboard to the user
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -57,7 +73,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if image_path:
             person_name = text.strip()
             os.rename(image_path, f"known_faces/{person_name}.jpg")
-            await update.message.reply_text(f"Face saved as {person_name}.", reply_markup=keyboard)
+            await update.message.reply_text(f"Great. I will now remember this face", reply_markup=keyboard)
 
             # Reset state to idle after saving the face
             user_states[user_id] = STATE_IDLE
@@ -125,12 +141,14 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Main function – sets up and runs the bot
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
+    os.makedirs("known_faces", exist_ok=True)
 
+    app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print("Bot is running... Press Ctrl+C to stop.")
+    print("Bot is running...")
     app.run_polling()
 
 if __name__ == '__main__':

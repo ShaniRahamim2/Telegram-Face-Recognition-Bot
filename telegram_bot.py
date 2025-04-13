@@ -26,7 +26,7 @@ user_states = {}         # maps user_id to state
 temp_faces = {}          # temporary image storage per user (for naming)
 
 # Define custom keyboard buttons
-keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces'], ['Similar celebs'], ['Map']]
+keyboard_buttons = [['Add face'], ['Recognize faces'], ['Reset faces'], ['Similar celebs'], ['Map'], ['Instructions']]
 keyboard = ReplyKeyboardMarkup(keyboard_buttons, resize_keyboard=True)
 
 # Load face encodings and names from known_faces folder
@@ -221,6 +221,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif text == "Map":
         await handle_map_button(update, context)
+
+    # User selected 'Instructions' - send instructions 
+    # feacher that added by me
+    elif text == "Instructions":
+        instructions = (
+            "*Instructions*\n\n"
+            "*Add face* – Upload a face and give it a name so I can recognize it later.\n"
+            "*Recognize faces* – Upload a photo, and I’ll label known faces in it.\n"
+            "*Reset faces* – Delete all the user faces you've added.\n"
+            "*Similar celebs* – Send a face, and I’ll find the most similar celebrity.\n"
+            "*Map* – I’ll generate a face similarity map for all users and celebs.\n"
+            "*Instructions* – Show this help message.\n"
+        )
+        await update.message.reply_markdown(instructions, reply_markup=keyboard)
 
     # If user is expected to enter a name for a previously uploaded face
     elif user_states.get(user_id) == STATE_AWAITING_NAME:
